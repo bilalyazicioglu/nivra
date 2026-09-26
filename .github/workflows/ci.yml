@@ -32,3 +32,13 @@ jobs:
       - run: cargo build --locked
       - run: python3 scripts/test-zsh.py
       - run: sh scripts/demo.sh
+  msrv:
+    name: MSRV / Rust 1.88
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install minimum supported Rust
+        run: rustup toolchain install 1.88.0 --profile minimal
+      - name: Select minimum supported Rust
+        run: rustup default 1.88.0
+      - run: cargo test --locked

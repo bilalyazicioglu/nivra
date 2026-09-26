@@ -1,6 +1,14 @@
 # Quickstart
 
-Build from source with a current stable Rust toolchain and Git:
+Install the source package with Rust 1.88 or newer and Git:
+
+```sh
+cargo install nivra --locked
+rehash  # zsh: refresh command lookup
+nivra --version
+```
+
+To build and run the isolated demo from a checkout:
 
 ```sh
 git clone https://github.com/bilalyazicioglu/nivra.git

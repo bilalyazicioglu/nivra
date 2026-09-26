@@ -1,11 +1,26 @@
 [package]
 name = "nivra"
-version = "0.1.0-alpha.1"
+version = "0.1.0"
 edition = "2024"
+rust-version = "1.88"
 description = "See what changed between working and broken. A local development timeline."
 license = "MIT"
 repository = "https://github.com/bilalyazicioglu/nivra"
-publish = false
+readme = "README.md"
+keywords = ["cli", "developer-tools", "git", "debugging", "timeline"]
+categories = ["command-line-utilities", "development-tools::debugging"]
+publish = ["crates-io"]
+include = [
+    "/src/**",
+    "/scripts/nivra.zsh",
+    "/assets/demo.svg",
+    "/tests/cli.rs",
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+]
 
 [dependencies]
 anyhow = "1"

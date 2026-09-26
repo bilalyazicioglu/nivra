@@ -6,13 +6,13 @@ Planning snapshot: 2026-09-26. The old Rewind document is product input; the imp
 - Core implementation merged through [PR #4](https://github.com/bilalyazicioglu/nivra/pull/4) as commit `419397b0422354f27bb0eab0a1d1e25086fc5511`. macOS and Ubuntu CI passed; [#1](https://github.com/bilalyazicioglu/nivra/issues/1) is complete.
 - [#2](https://github.com/bilalyazicioglu/nivra/issues/2) tracks M1 and [#3](https://github.com/bilalyazicioglu/nivra/issues/3) tracks M2.
 - This plan and initial wiki publication are tracked by [#5](https://github.com/bilalyazicioglu/nivra/issues/5) and [PR #46](https://github.com/bilalyazicioglu/nivra/pull/46).
-- 41 new work items cover known work. Future design-gated work packages are recorded without pretending they are ready for cheap-agent implementation.
+- 42 work items cover known work, including [#50](https://github.com/bilalyazicioglu/nivra/issues/50) for the requested crates.io source-alpha package. Future design-gated work packages are recorded without pretending they are ready for cheap-agent implementation.
 
 ## Product contract
 Answer “what changed between working and broken?” using local, inspectable development-state observations. Keep the shell working when capture fails. No required account, server, telemetry, AI, terminal-output recording or environment dump. Redact before persistence. Never infer causality or execute stored commands implicitly.
 
 ## Execution order
-1. **Foundation gate:** core PR #4 is merged; review and accept planning PR #46 before activating M1 tasks.
+1. **Foundation gate:** core PR #4 and planning PR #46 are merged. [#50](https://github.com/bilalyazicioglu/nivra/issues/50) adds the requested crates.io source package without blocking M1 discovery.
 2. **Parallel discovery:** [#6](https://github.com/bilalyazicioglu/nivra/issues/6), [#7](https://github.com/bilalyazicioglu/nivra/issues/7), [#8](https://github.com/bilalyazicioglu/nivra/issues/8), [#22](https://github.com/bilalyazicioglu/nivra/issues/22) establish shared contracts, benchmarks, shell regression evidence and current port inspection. Parallelize only with disjoint ownership.
 3. **Shared foundations:** [#9](https://github.com/bilalyazicioglu/nivra/issues/9), [#10](https://github.com/bilalyazicioglu/nivra/issues/10), [#14](https://github.com/bilalyazicioglu/nivra/issues/14), [#17](https://github.com/bilalyazicioglu/nivra/issues/17) land configuration, safe migrations, read queries and comparison contracts. Serialize conflicting edits to main/store/model.
 4. **Usable experience and reliability:** follow each task dependency for capture limits, privacy, timing, retention, CLI inspection/search and TUI. The visual path is [#24](https://github.com/bilalyazicioglu/nivra/issues/24) → [#25](https://github.com/bilalyazicioglu/nivra/issues/25) → [#26](https://github.com/bilalyazicioglu/nivra/issues/26). Do not trade shell/privacy reliability for screenshots.
@@ -29,6 +29,7 @@ Use [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md) for routing, the copyable prompt, own
 flowchart TD
   CORE["#1 / PR #4: merge core"]
   P00["P00 · #5"]
+  P01["P01 · #50"]
   A01["A01 · #6"]
   A02["A02 · #7"]
   A03["A03 · #8"]
@@ -69,6 +70,8 @@ flowchart TD
   E01["E01 · #43"]
   E02["E02 · #44"]
   F01["F01 · #45"]
+  CORE --> P01
+  P00 --> P01
   CORE --> A01
   CORE --> A02
   CORE --> A03
@@ -155,8 +158,9 @@ The graph is checked for missing keys and cycles by `python3 scripts/check-plan.
 | Issue | Work | Agent / size | Priority | Dependencies |
 | --- | --- | --- | --- | --- |
 | [#5](https://github.com/bilalyazicioglu/nivra/issues/5) · P00 | Publish an agent-ready roadmap and the initialized wiki | small / S | P0 | None |
+| [#50](https://github.com/bilalyazicioglu/nivra/issues/50) · P01 | Publish the functional source alpha to crates.io | standard / M | P0 | CORE, [#5](https://github.com/bilalyazicioglu/nivra/issues/5) |
 
-Gate: core code reviewed/merged, reproducible demo verified, planning source accepted and initial wiki publication verified.
+Gate: core code reviewed/merged, reproducible demo verified, planning source accepted and the source package independently validated before publication.
 
 ## M1 — Daily-use alpha
 

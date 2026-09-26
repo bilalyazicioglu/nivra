@@ -9,6 +9,7 @@ After the planning source is accepted, assign [#7](https://github.com/bilalyazic
 ## M0 — Core proof and planning
 
 - [#5](https://github.com/bilalyazicioglu/nivra/issues/5) **P00** — Publish an agent-ready roadmap and the initialized wiki (small, S)
+- [#50](https://github.com/bilalyazicioglu/nivra/issues/50) **P01** — Publish the functional source alpha to crates.io (standard, M)
 
 ## M1 — Daily-use alpha
 
