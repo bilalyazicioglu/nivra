@@ -1,0 +1,15 @@
+name: Planning
+on:
+  pull_request:
+  push:
+    branches: [main, docs/agent-ready-roadmap]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  plan:
+    name: Plan and wiki links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check-plan.py

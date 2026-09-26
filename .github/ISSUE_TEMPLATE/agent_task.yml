@@ -1,0 +1,57 @@
+name: Agent-ready work item
+description: A bounded task with dependencies, acceptance criteria and validation.
+title: "task: "
+labels: ["type: task", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Check docs/PLAN.md and existing issues first. A task is ready only after dependencies are merged and contracts accepted. Use synthetic data."
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome and bounded scope
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and accepted contracts
+      description: Link exact issues/PRs and state what must be merged before implementation. Say none only when verified.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Entry points and file ownership
+      description: List expected files and overlapping work to coordinate.
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Suggested agent tier
+      options:
+        - "small — existing interfaces and narrow changes"
+        - "standard — bounded module or integration"
+        - "specialist — contracts, privacy, data or process safety"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable outcomes, one checkbox per criterion.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation commands and evidence
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Out of scope and escalation conditions
+    validations:
+      required: true

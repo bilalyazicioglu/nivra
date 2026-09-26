@@ -1,0 +1,1402 @@
+{
+  "version": 1,
+  "planned_on": "2026-09-26",
+  "repository": "bilalyazicioglu/nivra",
+  "core_issue": 1,
+  "core_pr": 4,
+  "core_commit": "419397b0422354f27bb0eab0a1d1e25086fc5511",
+  "tasks": [
+    {
+      "key": "P00",
+      "title": "Publish an agent-ready roadmap and the initialized wiki",
+      "milestone": "M0",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P0",
+      "dependencies": [],
+      "files": [
+        "docs/PLAN.md",
+        "docs/BACKLOG.json",
+        "docs/AGENT_WORKFLOW.md",
+        "docs/wiki/",
+        "docs/GITHUB.md"
+      ],
+      "outcome": "Give every known workstream an issue, a dependency order, and an honest published wiki.",
+      "acceptance": [
+        "Create bounded child issues and link the existing tracking issues without duplicating the core implementation.",
+        "Publish a dependency-checked manifest, execution waves, agent handoff template and cost/risk tiers.",
+        "Publish wiki pages with navigation, installation troubleshooting and explicit source-preview status.",
+        "Verify issue links, graph integrity and the pushed wiki revision; keep source docs in a separate PR."
+      ],
+      "validation": [
+        "python3 scripts/check-plan.py",
+        "Verify GitHub issue/milestone links and wiki page links against live responses."
+      ],
+      "out_of_scope": "No product code changes, merging the core PR, new agents, releases or Reddit publication.",
+      "initial_status": "in-progress",
+      "issue": 5,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/5",
+      "milestone_number": 1,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A01",
+      "title": "Define snapshot, query and comparison contracts before parallel implementation",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "CORE"
+      ],
+      "files": [
+        "src/model.rs",
+        "src/store.rs",
+        "src/main.rs",
+        "docs/decisions/"
+      ],
+      "outcome": "Freeze small shared interfaces so independently assigned agents do not invent incompatible data models.",
+      "acceptance": [
+        "Write an ADR covering Snapshot completeness, index/worktree/HEAD identity and stable event ordering.",
+        "Specify a paginated read/query interface and a structured comparison result with synthetic examples.",
+        "Specify JSON compatibility and migration policy, wall-clock versus elapsed timing, and overlapping-command semantics.",
+        "Name exact follow-up owners/files; obtain maintainer acceptance before consumers implement the contract."
+      ],
+      "validation": [
+        "Review examples for unborn/detached HEAD, incomplete capture, same-time events and concurrent shells.",
+        "Documentation-only ADR; do not add implementation-mirroring tests."
+      ],
+      "out_of_scope": "No speculative workspace split, daemon, schema implementation or TUI code.",
+      "initial_status": "blocked",
+      "issue": 6,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/6",
+      "milestone_number": 2,
+      "execution_mode": "design"
+    },
+    {
+      "key": "A02",
+      "title": "Add reproducible release-binary capture benchmarks",
+      "milestone": "M1",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P0",
+      "dependencies": [
+        "CORE"
+      ],
+      "files": [
+        "scripts/",
+        "docs/benchmarks/"
+      ],
+      "outcome": "Measure actual overhead before selecting optimizations.",
+      "acceptance": [
+        "Provide isolated non-Git, small-repo and large-repo fixtures with documented file counts and sizes.",
+        "Measure startup, hook start/end and fingerprint-heavy capture separately with warmups and repetitions.",
+        "Report median/p95, toolchain, OS, machine and commit; persist only synthetic benchmark results.",
+        "Do not make hardware-specific thresholds mandatory in shared CI; document the reproduction command."
+      ],
+      "validation": [
+        "Run the harness on macOS in release mode and show valid raw samples and summary.",
+        "Run fixture creation/cleanup twice; confirm no user repo/history is modified."
+      ],
+      "out_of_scope": "No performance claims without results, no production optimization and no daemon.",
+      "initial_status": "blocked",
+      "issue": 7,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/7",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A03",
+      "title": "Expand interactive zsh regression coverage",
+      "milestone": "M1",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P0",
+      "dependencies": [
+        "CORE"
+      ],
+      "files": [
+        "scripts/test-zsh.py",
+        "tests/cli.rs",
+        "scripts/nivra.zsh"
+      ],
+      "outcome": "Expose shell integration regressions before enabling capture for daily work.",
+      "acceptance": [
+        "Cover cd across repositories, nested shells, leading-space commands and repeated init in real PTYs.",
+        "Cover failed commands, Ctrl-C, unavailable binary and database locks while checking exit status and responsiveness.",
+        "Assert session separation and no double-recording of explicit nivra run.",
+        "Use temporary HOME/ZDOTDIR/data fixtures; report newly discovered production bugs explicitly instead of weakening assertions."
+      ],
+      "validation": [
+        "python3 scripts/test-zsh.py on macOS and Linux",
+        "cargo test --locked"
+      ],
+      "out_of_scope": "No new shell support or major hook redesign; unrelated failures become focused issues.",
+      "initial_status": "blocked",
+      "issue": 8,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/8",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A04",
+      "title": "Implement validated local configuration loading",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A01"
+      ],
+      "files": [
+        "src/config.rs (new)",
+        "src/main.rs",
+        "docs/wiki/Configuration.md (new)"
+      ],
+      "outcome": "Give later privacy and retention tasks one documented source of configuration.",
+      "acceptance": [
+        "Add a versioned TOML configuration with conservative defaults and explicit config-path precedence.",
+        "Validate known keys, durations and size limits; useful CLI errors and fail-open hook behavior for invalid configuration.",
+        "Define settings for enabled capture, Git enablement, limits, exclusions and retention without claiming unimplemented consumers work.",
+        "Expose resolved non-sensitive settings through a config command; test missing and malformed files."
+      ],
+      "validation": [
+        "Unit tests for precedence/defaults/unknown keys and invalid limits.",
+        "CLI tests with isolated config/data directories; full Rust checks."
+      ],
+      "out_of_scope": "No environment value capture, full patch/output capture, sync settings or hidden writes to shell startup files.",
+      "initial_status": "blocked",
+      "issue": 9,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/9",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A05",
+      "title": "Harden SQLite migrations, concurrent initialization and private storage",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A01"
+      ],
+      "files": [
+        "src/store.rs",
+        "src/model.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "Make future schema changes and simultaneous shell capture safe for existing history.",
+      "acceptance": [
+        "Introduce transactional, versioned migrations with fixtures for v1, interrupted migration and newer unknown versions.",
+        "Make concurrent initialization and writes deterministic; capture still fails open under contention.",
+        "Review directory/database symlink handling and prevent accidentally changing permissions on a shared/home directory.",
+        "Document durability and journal decisions; prove existing events and marks survive upgrades."
+      ],
+      "validation": [
+        "Migration round-trip and failure rollback tests on fixture databases.",
+        "Concurrent-process, locked-database and unsafe-path tests; macOS/Linux CI."
+      ],
+      "out_of_scope": "No destructive reset fallback, background service, encryption promise or unrelated read API redesign.",
+      "initial_status": "blocked",
+      "issue": 10,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/10",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A06",
+      "title": "Enforce a total capture budget with explicit partial snapshots",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A02",
+        "A04",
+        "A05"
+      ],
+      "files": [
+        "src/git.rs",
+        "src/model.rs",
+        "src/main.rs",
+        "src/config.rs"
+      ],
+      "outcome": "Bound shell interference across Git subprocesses and file hashing, not just each Git query.",
+      "acceptance": [
+        "Apply a shared deadline, output cap and aggregate file/byte budget per capture.",
+        "Stop or skip work safely and encode partial-snapshot reasons through the accepted contract.",
+        "Handle slow Git, unreadable files, symlinks, non-UTF-8 paths and file growth without indefinite capture work.",
+        "Publish before/after benchmark data and preserve fail-open behavior; document any unbounded OS edge cases honestly."
+      ],
+      "validation": [
+        "Deterministic slow-process and oversized-fixture tests with generous upper-bound assertions.",
+        "Repeat A02 benchmarks; verify partial results cannot be presented as complete marks."
+      ],
+      "out_of_scope": "No daemon or async redesign unless a separate ADR and issue are approved.",
+      "initial_status": "blocked",
+      "issue": 11,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/11",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A07",
+      "title": "Add configurable exclusions and strengthen pre-storage redaction",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A04",
+        "A06"
+      ],
+      "files": [
+        "src/privacy.rs",
+        "src/config.rs",
+        "src/main.rs",
+        "tests/cli.rs",
+        "docs/wiki/Privacy.md"
+      ],
+      "outcome": "Keep sensitive workflows out of history with explicit, testable controls.",
+      "acceptance": [
+        "Implement documented command/repository exclusion rules before persistence and define ignore-next consumption semantics.",
+        "Add synthetic fixtures for quoted/multiline assignments, flags, credential URLs, false positives and oversized inputs.",
+        "Verify secrets never occur in database bytes, sidecars or diagnostic output; never use real credentials.",
+        "Preserve pause/resume behavior across shells and clearly document heuristic limits."
+      ],
+      "validation": [
+        "Redaction fixture tests and raw-storage leak assertions.",
+        "End-to-end tests for exclusions, pause, ignore-next and concurrent shells."
+      ],
+      "out_of_scope": "No claim of perfect secret detection, automatic historical scrubbing or posting private reports.",
+      "initial_status": "blocked",
+      "issue": 12,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/12",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A08",
+      "title": "Separate command elapsed time from wall-clock event timestamps",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A03",
+        "A05"
+      ],
+      "files": [
+        "src/model.rs",
+        "src/store.rs",
+        "src/main.rs",
+        "scripts/nivra.zsh"
+      ],
+      "outcome": "Show trustworthy command duration even when the wall clock changes.",
+      "acceptance": [
+        "Store event timestamps separately from monotonic elapsed duration for explicit runs.",
+        "Define and implement a supported zsh elapsed-time transport that excludes capture work where measurable.",
+        "Preserve incomplete events and old database compatibility; do not invent a duration when timing is unavailable.",
+        "Document nested shell, suspend/resume and interrupted-command semantics."
+      ],
+      "validation": [
+        "Injectable clock/unit fixtures for backwards/forwards wall-clock changes.",
+        "PTY and explicit-run duration tests plus migration coverage."
+      ],
+      "out_of_scope": "No timeline ordering solely by monotonic timestamps from unrelated processes.",
+      "initial_status": "blocked",
+      "issue": 13,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/13",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A09",
+      "title": "Extract a paginated read API for events, sessions and marks",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A05"
+      ],
+      "files": [
+        "src/store.rs",
+        "src/query.rs (new)",
+        "src/main.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "Let CLI and TUI consume the same bounded queries instead of directly issuing ad-hoc SQL.",
+      "acceptance": [
+        "Implement stable cursor pagination using the A01 contract, including equal timestamps and incomplete events.",
+        "Expose typed event detail, session summary and repository-scoped mark queries.",
+        "Separate query operations from schema mutations; do not silently create history just to inspect a missing database.",
+        "Preserve current events output compatibility and add deterministic synthetic fixtures."
+      ],
+      "validation": [
+        "Multi-page tests without duplicated/missing rows, empty DB and repository isolation.",
+        "Read-only/locked database cases; full Rust checks."
+      ],
+      "out_of_scope": "No TUI, search syntax, new capture schema or unbounded loading of entire history.",
+      "initial_status": "blocked",
+      "issue": 14,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/14",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A10",
+      "title": "Add event inspection and named-mark listing commands",
+      "milestone": "M1",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P1",
+      "dependencies": [
+        "A09"
+      ],
+      "files": [
+        "src/main.rs",
+        "src/query.rs",
+        "tests/cli.rs",
+        "docs/wiki/Quickstart.md"
+      ],
+      "outcome": "Inspect one observed event and discover existing baselines from the CLI.",
+      "acceptance": [
+        "Add show by unambiguous event ID/prefix with text and JSON output, before/after state and incomplete status.",
+        "Add repository-scoped marks listing with names and capture timestamps.",
+        "Reject ambiguous/missing IDs with actionable messages and safe exit codes.",
+        "Use the shared query API and escape control characters in metadata."
+      ],
+      "validation": [
+        "CLI fixtures for completed/incomplete events, ambiguous prefixes and per-repo marks.",
+        "Verify JSON shape and empty-list behavior."
+      ],
+      "out_of_scope": "No command replay, mark deletion, database schema redesign or TUI.",
+      "initial_status": "blocked",
+      "issue": 15,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/15",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A11",
+      "title": "Add session browsing and composable timeline search",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A09"
+      ],
+      "files": [
+        "src/query.rs",
+        "src/main.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "Find a failed command in the right development session without loading the entire database.",
+      "acceptance": [
+        "Add sessions summaries and event filters for text, failed status, repo, branch, session and since time.",
+        "Define time-zone/relative-time parsing and combination semantics; bind all SQL parameters.",
+        "Reuse stable pagination and preserve structured JSON output.",
+        "Provide clear empty and invalid-filter responses with synthetic examples."
+      ],
+      "validation": [
+        "Combined filters across sessions/repos; same timestamps and special characters.",
+        "Query-plan or bounded-query evidence on a large synthetic history."
+      ],
+      "out_of_scope": "No replacement for Atuin, fuzzy search engine or external indexing service.",
+      "initial_status": "blocked",
+      "issue": 16,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/16",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A12",
+      "title": "Implement structured state comparison shared by CLI and TUI",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A01",
+        "A09"
+      ],
+      "files": [
+        "src/compare.rs (new)",
+        "src/model.rs",
+        "src/main.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "Give every viewer the same interpretation of before/after state and uncertainty.",
+      "acceptance": [
+        "Extract comparison into a testable typed result with file transitions, branch/HEAD changes and completeness warnings.",
+        "Handle dirty-to-dirty edits, deletions, renames, unborn/detached HEAD and reversed intervals explicitly.",
+        "Define command-boundary inclusion and overlapping-event presentation; retain observations-only language.",
+        "Version/document JSON and keep existing CLI workflows usable."
+      ],
+      "validation": [
+        "Fixture-driven comparison tests for each transition and partial snapshots.",
+        "End-to-end mark/diff tests across repos and equal timestamps."
+      ],
+      "out_of_scope": "No stored full file contents, causal diagnosis, Git restoration or TUI rendering.",
+      "initial_status": "blocked",
+      "issue": 17,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/17",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A13",
+      "title": "Expand comparisons to staged and committed Git changes",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A06",
+        "A12"
+      ],
+      "files": [
+        "src/git.rs",
+        "src/model.rs",
+        "src/compare.rs",
+        "src/store.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "A commit or index-only change should not disappear behind an unchanged worktree status.",
+      "acceptance": [
+        "Represent index and worktree identity according to A01 and migrate stored snapshots compatibly.",
+        "Report committed file names and insertion/deletion stats when historical objects are available, without storing patches by default.",
+        "Handle binary files, renamed files, staging-only changes, unavailable objects and detached HEAD honestly.",
+        "Respect the total capture/read budgets and never invoke external diff drivers or textconv."
+      ],
+      "validation": [
+        "Temporary Git repositories exercising add/stage/unstage/commit/rename and missing-object cases.",
+        "Repeat relevant capture benchmarks and migration tests."
+      ],
+      "out_of_scope": "No full diff storage, source recovery or causal claims; optional full diffs remain a deferred design.",
+      "initial_status": "blocked",
+      "issue": 18,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/18",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A14",
+      "title": "Implement explicit retention and safe garbage collection",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A04",
+        "A09"
+      ],
+      "files": [
+        "src/store.rs",
+        "src/config.rs",
+        "src/main.rs",
+        "tests/cli.rs",
+        "docs/wiki/Privacy.md"
+      ],
+      "outcome": "Let users bound local history without silently losing marked baselines.",
+      "acceptance": [
+        "Define retention cutoffs and pinning rules for marks/incomplete events before deleting records.",
+        "Add gc with a dry-run summary and transactional execution over the dedicated data store.",
+        "Respect active readers/writers, remove orphaned rows safely and document disk-space reclamation separately.",
+        "Test disabled/default retention and exact cutoff semantics; no automatic sweeping before policy is explicit."
+      ],
+      "validation": [
+        "Synthetic histories covering protected marks, incomplete events, boundary timestamps and rollback.",
+        "Concurrent reader/writer and idempotent dry-run/execution tests."
+      ],
+      "out_of_scope": "No deletion outside the Nivra database, undocumented default purges or shell-startup cleanup.",
+      "initial_status": "blocked",
+      "issue": 19,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/19",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A15",
+      "title": "Improve doctor and installation troubleshooting",
+      "milestone": "M1",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P1",
+      "dependencies": [
+        "A03",
+        "A04",
+        "A05"
+      ],
+      "files": [
+        "src/main.rs",
+        "src/shell.rs",
+        "scripts/nivra.zsh",
+        "docs/wiki/Troubleshooting.md"
+      ],
+      "outcome": "Explain build-versus-install, hook activation and capture failures without misleading success checks.",
+      "acceptance": [
+        "Report binary location/version, configured data path, schema health and required tools with clear remediation.",
+        "Add an explicit session marker/handshake so hook status is reported only when verifiable.",
+        "Produce a sanitized report suitable for issues; do not leak command history or home paths by default.",
+        "Document cargo install, PATH/rehash, unloading hooks and temporary demo-data behavior."
+      ],
+      "validation": [
+        "CLI tests for missing Git, invalid config, inaccessible data and inactive hooks.",
+        "PTY verification of actual hook activation and installation examples."
+      ],
+      "out_of_scope": "No automatic shell-file modification or automatic transmission of diagnostic reports.",
+      "initial_status": "blocked",
+      "issue": 20,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/20",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A16",
+      "title": "Polish terminal output for narrow widths and accessibility",
+      "milestone": "M1",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P2",
+      "dependencies": [
+        "A10",
+        "A12"
+      ],
+      "files": [
+        "src/main.rs",
+        "src/render.rs (new)",
+        "tests/cli.rs"
+      ],
+      "outcome": "Keep long temporary paths and Unicode metadata readable on real terminals.",
+      "acceptance": [
+        "Centralize rendering with terminal-width-aware path display and explicit full-path access.",
+        "Honor NO_COLOR/non-TTY output; never rely on color alone for status.",
+        "Escape control sequences and handle narrow windows, long commands and Unicode widths.",
+        "Keep JSON values unshortened and document stable versus human-readable output."
+      ],
+      "validation": [
+        "Representative 40/80/120-column rendering fixtures plus redirected output.",
+        "Control-sequence/Unicode/path tests and a manual terminal check."
+      ],
+      "out_of_scope": "No fake demo data, full theme engine or changes to stored metadata.",
+      "initial_status": "blocked",
+      "issue": 21,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/21",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A17",
+      "title": "Implement read-only current port inspection on macOS",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "CORE"
+      ],
+      "files": [
+        "src/ports.rs (new)",
+        "src/main.rs",
+        "tests/fixtures/ports/ (new)"
+      ],
+      "outcome": "Show what currently listens on a port and its process/project when observable.",
+      "acceptance": [
+        "Add ports and port commands with port, address, PID, executable and cwd/repository where available.",
+        "Use a documented macOS provider with bounded subprocess behavior and injectable parser fixtures.",
+        "Handle IPv4/IPv6, duplicate sockets, permission restrictions and disappearing processes.",
+        "Mark unavailable fields explicitly; do not claim a historical command started a process without evidence."
+      ],
+      "validation": [
+        "Parser fixtures and a controlled loopback listener smoke test on macOS.",
+        "Verify no process is terminated or signaled by inspection."
+      ],
+      "out_of_scope": "No runtime history, root escalation, process ancestry guesses, restart or Linux provider.",
+      "initial_status": "blocked",
+      "issue": 22,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/22",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A18",
+      "title": "Add safe, explicit port-owner termination",
+      "milestone": "M1",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "A17"
+      ],
+      "files": [
+        "src/ports.rs",
+        "src/main.rs",
+        "tests/cli.rs",
+        "docs/wiki/Privacy.md"
+      ],
+      "outcome": "Allow an intentional stop action without terminating a reused PID or unrelated service.",
+      "acceptance": [
+        "Revalidate PID identity and socket ownership immediately before signaling; handle races explicitly.",
+        "Default to graceful termination with bounded wait; escalation must be an explicit separate choice.",
+        "Show the exact target and require confirmation; noninteractive calls require explicit intent flags.",
+        "Test only child processes created by the test; refusal and permission failures are actionable."
+      ],
+      "validation": [
+        "Fake-provider PID reuse/race tests and isolated child-process stop tests.",
+        "Confirm inspection never signals and cancellation never mutates."
+      ],
+      "out_of_scope": "No arbitrary process killing, sudo, service-manager changes or automatic restart.",
+      "initial_status": "blocked",
+      "issue": 23,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/23",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A19",
+      "title": "Build the TUI terminal lifecycle and application shell",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A01",
+        "A09"
+      ],
+      "files": [
+        "src/tui/mod.rs (new)",
+        "src/main.rs",
+        "Cargo.toml",
+        "tests/"
+      ],
+      "outcome": "Provide a safe terminal foundation before adding timeline panels.",
+      "acceptance": [
+        "Use one maintainer-selected Rust TUI stack; document the small app/event/render interface.",
+        "Restore terminal state on normal exit, errors and panic paths; define Ctrl-C behavior.",
+        "Fall back to useful text output when stdin/stdout are not TTYs; preserve existing CLI commands.",
+        "Support resize, help and clean empty/error states using the shared read API."
+      ],
+      "validation": [
+        "PTY smoke tests for enter/quit/resize/error and terminal restoration.",
+        "CI-friendly render tests without requiring a graphical desktop."
+      ],
+      "out_of_scope": "No timeline search implementation, event inspector or repository architecture rewrite.",
+      "initial_status": "blocked",
+      "issue": 24,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/24",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A20",
+      "title": "Implement keyboard-driven timeline browsing in the TUI",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A19",
+        "A11"
+      ],
+      "files": [
+        "src/tui/",
+        "src/query.rs",
+        "tests/"
+      ],
+      "outcome": "Browse real command events quickly by session and failure state.",
+      "acceptance": [
+        "Render paginated events with time, duration, exit/incomplete state and repository/session context.",
+        "Add documented up/down/page navigation and session/search/failure filters.",
+        "Keep selection stable through refresh and paging; show loading/empty/error states.",
+        "Ensure narrow terminals, long commands and non-color status remain usable."
+      ],
+      "validation": [
+        "Deterministic render/input-state tests with synthetic events.",
+        "Real PTY flow exercising filters, paging and clean quit."
+      ],
+      "out_of_scope": "No full history fetch, command execution or detail/compare panel implementation.",
+      "initial_status": "blocked",
+      "issue": 25,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/25",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A21",
+      "title": "Add event details and baseline comparison panels to the TUI",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "A20",
+        "A10",
+        "A12"
+      ],
+      "files": [
+        "src/tui/",
+        "src/compare.rs",
+        "tests/"
+      ],
+      "outcome": "Make the passing-baseline-to-failure investigation visible in one terminal interface.",
+      "acceptance": [
+        "Open event details with enter and render before/after state, exit status and incomplete warnings.",
+        "Allow selecting a named mark and comparing with a selected snapshot or now through shared comparison logic.",
+        "Display file transitions and intervening commands with clear focus/back/help navigation.",
+        "Do not infer causality, replay commands, or hide partial-capture warnings."
+      ],
+      "validation": [
+        "Render/input-state fixtures for baseline, changed files, partial events and missing marks.",
+        "Record a real temporary-repository walkthrough using stored events."
+      ],
+      "out_of_scope": "No process controls, clipboard integration or duplicate comparison implementation.",
+      "initial_status": "blocked",
+      "issue": 26,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/26",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "A22",
+      "title": "Add a deterministic why command for repeated success/failure checks",
+      "milestone": "M1",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "A11",
+        "A12"
+      ],
+      "files": [
+        "src/main.rs",
+        "src/query.rs",
+        "src/compare.rs",
+        "tests/cli.rs"
+      ],
+      "outcome": "Find the last successful equivalent command before a failure and summarize observed changes.",
+      "acceptance": [
+        "Define exact command/repository matching, time range and session scope without AI heuristics.",
+        "Select a successful baseline before the failure, using comparable pre-execution snapshots and explaining unavailable cases.",
+        "Present the shared state comparison and command interval with clear observation-only wording.",
+        "Support text/JSON and never auto-execute either command."
+      ],
+      "validation": [
+        "Fixtures for repeated successes/failures, redacted commands, missing baselines and cross-repo histories.",
+        "CLI tests proving deterministic selection and no execution side effects."
+      ],
+      "out_of_scope": "No AI dependency, causal diagnosis or approximate secret-sensitive command matching.",
+      "initial_status": "blocked",
+      "issue": 27,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/27",
+      "milestone_number": 2,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "B01",
+      "title": "Complete a documented daily-use alpha evaluation",
+      "milestone": "M2",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "A06",
+        "A07",
+        "A08",
+        "A13",
+        "A14",
+        "A15",
+        "A18",
+        "A21",
+        "A22"
+      ],
+      "files": [
+        "docs/validation/ (new)",
+        "GitHub issues"
+      ],
+      "outcome": "Use real development sessions before presenting the product as ready for broader use.",
+      "acceptance": [
+        "Maintainer runs the alpha for seven real days and records a dated checklist without private history.",
+        "Evaluate capture overhead, shell reliability, recovery, TUI usability and privacy controls.",
+        "Open reproducible issues for findings; resolve release-blocking data loss, shell interference and credential leaks.",
+        "Publish a supported-platform matrix and limitations grounded in observed results."
+      ],
+      "validation": [
+        "Dated manual evidence, benchmark references and linked regression issues.",
+        "Automated tests supplement but do not replace elapsed real-world use."
+      ],
+      "out_of_scope": "No fabricated dogfooding, instant completion by an agent or public release approval.",
+      "initial_status": "blocked",
+      "issue": 28,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/28",
+      "milestone_number": 3,
+      "execution_mode": "maintainer-led"
+    },
+    {
+      "key": "B02",
+      "title": "Build reproducible preview release artifacts and checksums",
+      "milestone": "M2",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P1",
+      "dependencies": [
+        "B01"
+      ],
+      "files": [
+        ".github/workflows/release.yml (new)",
+        "Cargo.toml",
+        "docs/releases/ (new)"
+      ],
+      "outcome": "Produce downloadable binaries tied to an exact reviewed source revision.",
+      "acceptance": [
+        "Define a supported target matrix, tag/version checks, minimal workflow permissions and pinned actions.",
+        "Produce archives with license/version metadata and SHA-256 checksums; test packaging without publishing.",
+        "Document provenance/signing choices and never claim notarization or signatures that are absent.",
+        "Require an explicit maintainer release action; do not publish credentials or overwrite existing releases."
+      ],
+      "validation": [
+        "Dry-run matrix builds and archive/checksum verification.",
+        "Inspect artifact names, binary versions and workflow permissions."
+      ],
+      "out_of_scope": "No automatic tag push, public release, crate publication or signing-certificate acquisition.",
+      "initial_status": "blocked",
+      "issue": 29,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/29",
+      "milestone_number": 3,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "B03",
+      "title": "Verify clean-machine install, upgrade and uninstall flows",
+      "milestone": "M2",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P1",
+      "dependencies": [
+        "B02",
+        "A15"
+      ],
+      "files": [
+        "docs/wiki/Quickstart.md",
+        "docs/wiki/Troubleshooting.md",
+        "scripts/"
+      ],
+      "outcome": "Prevent another successful build followed by command-not-found for first-time users.",
+      "acceptance": [
+        "Verify source and release-binary installation on the supported clean environments with no pre-existing Nivra PATH entry.",
+        "Document PATH setup, rehash, hook opt-in, upgrades and unloading/uninstalling without silently deleting history.",
+        "Run the working-to-broken demo against the installed binary and record actual platform results.",
+        "Document unsupported platforms and interrupted-install recovery."
+      ],
+      "validation": [
+        "Clean VM/container evidence where appropriate, plus actual macOS install validation.",
+        "nivra --version, --help and isolated demo from outside the checkout."
+      ],
+      "out_of_scope": "No unreviewed curl-pipe-shell installer or claim that a container validates macOS.",
+      "initial_status": "blocked",
+      "issue": 30,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/30",
+      "milestone_number": 3,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "B04",
+      "title": "Produce the real demo recording and public-preview materials",
+      "milestone": "M2",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P1",
+      "dependencies": [
+        "A21",
+        "B01"
+      ],
+      "files": [
+        "scripts/demo.sh",
+        "assets/",
+        "docs/launch/",
+        "README.md"
+      ],
+      "outcome": "Show the actual debugging payoff within 15–20 seconds.",
+      "acceptance": [
+        "Record a passing check, mark, real edit, failure and TUI comparison using the released/identified candidate.",
+        "Remove personal paths and credentials; retain truthful command results and label the tested revision.",
+        "Update README with a readable still, accessible text transcript and a reproducible demo command.",
+        "Draft launch text with limitations, measured overhead and specific feedback questions; inspect current community rules before posting."
+      ],
+      "validation": [
+        "Replay the demo from a clean temporary repository and inspect the resulting video/still.",
+        "Verify all download/docs links and compare claims to the candidate behavior."
+      ],
+      "out_of_scope": "No Reddit posting, fabricated results, stock TUI screenshots, user-count claims or automatic promotion.",
+      "initial_status": "blocked",
+      "issue": 31,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/31",
+      "milestone_number": 3,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "B05",
+      "title": "Run the public-preview release gate",
+      "milestone": "M2",
+      "agent_tier": "specialist",
+      "size": "S",
+      "priority": "P0",
+      "dependencies": [
+        "B03",
+        "B04",
+        "DOCSYNC"
+      ],
+      "files": [
+        "docs/releases/",
+        "CHANGELOG.md",
+        "GitHub release/launch checklist"
+      ],
+      "outcome": "Keep the final launch decision distinct from delegated implementation work.",
+      "acceptance": [
+        "Maintainer verifies all M1/M2 acceptance evidence, security findings and candidate CI results.",
+        "Verify source tag, artifact checksums, installation instructions and wiki match the candidate revision.",
+        "Record go/no-go with unresolved risks; do not close the gate with missing evidence.",
+        "Publish release or community posts only when the user explicitly authorizes those final actions."
+      ],
+      "validation": [
+        "Manual checklist referencing exact commits, artifacts and accepted risks."
+      ],
+      "out_of_scope": "No autonomous public launch, fabricated approvals or bypass of branch protection.",
+      "initial_status": "blocked",
+      "issue": 33,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/33",
+      "milestone_number": 3,
+      "execution_mode": "maintainer-led"
+    },
+    {
+      "key": "DOCSYNC",
+      "title": "Add a checked, manual wiki publication workflow",
+      "milestone": "M2",
+      "agent_tier": "small",
+      "size": "S",
+      "priority": "P2",
+      "dependencies": [
+        "P00"
+      ],
+      "files": [
+        "scripts/",
+        "docs/wiki/",
+        "docs/GITHUB.md",
+        ".github/workflows/"
+      ],
+      "outcome": "Keep reviewed Markdown sources and GitHub Wiki pages from silently diverging.",
+      "acceptance": [
+        "Add a dry-run exporter that rewrites local page links, validates page targets and preserves any unrelated wiki pages.",
+        "Include a source revision marker and reject unresolved links before publication.",
+        "Provide a maintainer-invoked publish procedure that diffs before pushing and does not need a persistent write token in CI.",
+        "Validate plan/wiki links in documentation CI; avoid overwriting manual wiki edits without a reviewed diff."
+      ],
+      "validation": [
+        "Temporary source/wiki fixtures for .md links, anchors, missing pages and unrelated content.",
+        "Dry-run against the current wiki with no remote write."
+      ],
+      "out_of_scope": "No recurring bot, secrets in repository, automatic publishing on every PR or product changes.",
+      "initial_status": "blocked",
+      "issue": 32,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/32",
+      "milestone_number": 3,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "C01",
+      "title": "Add Bash integration using the accepted capture contract",
+      "milestone": "M3",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "B05",
+        "A03"
+      ],
+      "files": [
+        "src/shell.rs",
+        "scripts/",
+        "tests/",
+        "docs/wiki/"
+      ],
+      "outcome": "Offer Bash users the same event model without disrupting existing prompt integrations.",
+      "acceptance": [
+        "Specify supported Bash versions and prompt/preexec strategy before implementation.",
+        "Preserve existing prompt commands, exit codes, multiline commands and session isolation.",
+        "Honor exclusions, pause and explicit-run deduplication; failures remain non-blocking to user commands.",
+        "Provide install/unload instructions and PTY tests on supported platforms."
+      ],
+      "validation": [
+        "Bash PTY matrix with failures, pipelines, signals and multiple prompt integrations."
+      ],
+      "out_of_scope": "No shell replacement, automatic rc editing or unverified Bash-version claims.",
+      "initial_status": "deferred",
+      "issue": 34,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/34",
+      "milestone_number": 4,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "C02",
+      "title": "Add Fish integration using the accepted capture contract",
+      "milestone": "M3",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "B05",
+        "A03"
+      ],
+      "files": [
+        "src/shell.rs",
+        "scripts/",
+        "tests/",
+        "docs/wiki/"
+      ],
+      "outcome": "Offer Fish users the same local capture and privacy controls.",
+      "acceptance": [
+        "Specify supported Fish versions and event hooks, then implement opt-in integration.",
+        "Preserve status, job behavior, nested sessions and explicit-run deduplication.",
+        "Support idempotent init/unload and bounded fail-open capture.",
+        "Add PTY coverage and installation documentation."
+      ],
+      "validation": [
+        "Fish PTY matrix for success/failure, signals, spaces and missing Nivra binary."
+      ],
+      "out_of_scope": "No global shell configuration modification or unrelated capture redesign.",
+      "initial_status": "deferred",
+      "issue": 35,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/35",
+      "milestone_number": 4,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "C03",
+      "title": "Add a Linux port provider and publish a tested support matrix",
+      "milestone": "M3",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "B05",
+        "A17"
+      ],
+      "files": [
+        "src/ports.rs",
+        "tests/fixtures/ports/",
+        "docs/wiki/"
+      ],
+      "outcome": "Extend current port inspection with honest Linux capability reporting.",
+      "acceptance": [
+        "Implement a provider behind the existing typed interface and define required tools/proc access.",
+        "Cover IPv4/IPv6, permission restrictions, PID races and cwd unavailability.",
+        "Preserve read-only inspection and ensure safe-stop identity checks apply consistently.",
+        "Publish tested distro/kernel/tool assumptions and graceful unavailable states."
+      ],
+      "validation": [
+        "Linux parser fixtures and isolated real listener tests in CI."
+      ],
+      "out_of_scope": "No root requirement, full process monitor or historical process attribution.",
+      "initial_status": "deferred",
+      "issue": 36,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/36",
+      "milestone_number": 4,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "C04",
+      "title": "Specify a versioned portable session bundle and import threat model",
+      "milestone": "M3",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "B05",
+        "A12"
+      ],
+      "files": [
+        "docs/decisions/",
+        "docs/formats/ (new)"
+      ],
+      "outcome": "Design export/import once before implementations start storing incompatible archives.",
+      "acceptance": [
+        "Specify .nivra metadata and event/snapshot encoding, limits, versioning and repository/path handling.",
+        "Define export privacy defaults, explicit review, incomplete-event semantics and no command replay.",
+        "Define importer protections for path traversal, symlinks, zip bombs, duplicates and unknown versions.",
+        "Provide synthetic valid/invalid fixtures and create separately scoped implementation acceptance criteria."
+      ],
+      "validation": [
+        "Maintainer review of format examples and threat model; fixture-schema validation."
+      ],
+      "out_of_scope": "No network sharing, custom binary format, implementation before ADR acceptance or .rewind branding.",
+      "initial_status": "deferred",
+      "issue": 37,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/37",
+      "milestone_number": 4,
+      "execution_mode": "design"
+    },
+    {
+      "key": "C05",
+      "title": "Implement local bundle export with explicit privacy preview",
+      "milestone": "M3",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "C04"
+      ],
+      "files": [
+        "src/export.rs (new)",
+        "src/main.rs",
+        "tests/",
+        "docs/wiki/"
+      ],
+      "outcome": "Create a portable selected session without silently exposing the whole history.",
+      "acceptance": [
+        "Export explicit session/time/repo selections using the accepted .nivra format and enforce size limits.",
+        "Show a reviewable metadata/command summary and allow cancellation before writing.",
+        "Apply export redaction/path policy and label heuristic limits; output never uploads anywhere.",
+        "Write atomically and handle existing destination files without silent overwrite."
+      ],
+      "validation": [
+        "Golden synthetic archives, range-boundary/redaction tests and failed-write cleanup tests."
+      ],
+      "out_of_scope": "No upload, remote viewer, replay or automatic inclusion of full source patches.",
+      "initial_status": "deferred",
+      "issue": 38,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/38",
+      "milestone_number": 4,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "C06",
+      "title": "Implement safe, read-only inspection of imported bundles",
+      "milestone": "M3",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "C05"
+      ],
+      "files": [
+        "src/import.rs (new)",
+        "src/main.rs",
+        "src/tui/",
+        "tests/"
+      ],
+      "outcome": "Inspect a shared reproduction without trusting its paths, commands or schema.",
+      "acceptance": [
+        "Validate format/version/size limits and reject traversal, symlink and decompression abuse.",
+        "Open imported data in an isolated read-only context without merging into live capture history.",
+        "Render untrusted metadata safely and preserve explicit incomplete/unsupported states.",
+        "Never execute commands, fetch URLs or restore files from imported data."
+      ],
+      "validation": [
+        "Malicious synthetic archives and resource-limit tests plus export/open round-trip."
+      ],
+      "out_of_scope": "No auto-merge, replay, source restoration or network requests.",
+      "initial_status": "deferred",
+      "issue": 39,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/39",
+      "milestone_number": 4,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "D01",
+      "title": "Design runtime observation, ownership and resource budgets",
+      "milestone": "M4",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "B05",
+        "A17"
+      ],
+      "files": [
+        "docs/decisions/",
+        "docs/formats/"
+      ],
+      "outcome": "Define the evidence needed to connect a command, process and port over time.",
+      "acceptance": [
+        "Specify process identity beyond PID, observation gaps, ancestry confidence and permissions per platform.",
+        "Choose an observation strategy from measurements, including explicit lifecycle and resource budgets.",
+        "Specify storage/event contracts, retention and how runtime state enters snapshot comparisons.",
+        "Split implementation into bounded child issues before accepting the design; no daemon by default without evidence."
+      ],
+      "validation": [
+        "Review synthetic timelines for PID reuse, detached jobs, missed exits and ambiguous ownership."
+      ],
+      "out_of_scope": "No production runtime monitor, daemon installation or unsupported historical attribution.",
+      "initial_status": "deferred",
+      "issue": 40,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/40",
+      "milestone_number": 5,
+      "execution_mode": "design"
+    },
+    {
+      "key": "D02",
+      "title": "Implement a bounded runtime timeline pilot",
+      "milestone": "M4",
+      "agent_tier": "specialist",
+      "size": "L",
+      "priority": "P2",
+      "dependencies": [
+        "D01",
+        "C03",
+        "A14"
+      ],
+      "files": [
+        "src/runtime/ (new)",
+        "src/store.rs",
+        "src/compare.rs",
+        "tests/"
+      ],
+      "outcome": "Prove process/port history with one accepted platform before broadening it.",
+      "acceptance": [
+        "Split this gated work package into S/M implementation issues using the accepted D01 contract before coding.",
+        "Implement one platform provider, retention-aware runtime events and explicit observation gaps.",
+        "Add port history and comparison integration without guessing command ownership.",
+        "Publish overhead and controlled-process evidence; enable collection only through explicit opt-in."
+      ],
+      "validation": [
+        "Controlled process tree/socket lifecycle tests, PID-reuse fixtures and resource benchmarks."
+      ],
+      "out_of_scope": "Not ready for a single low-cost-agent implementation; no unbounded polling or cross-platform promises.",
+      "initial_status": "deferred",
+      "issue": 41,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/41",
+      "milestone_number": 5,
+      "execution_mode": "split-before-code"
+    },
+    {
+      "key": "D03",
+      "title": "Design and implement explicit, race-safe process restart",
+      "milestone": "M4",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "D02",
+        "A18"
+      ],
+      "files": [
+        "src/runtime/",
+        "src/main.rs",
+        "tests/"
+      ],
+      "outcome": "Restart only a known command with reviewable cwd/arguments and trustworthy ownership.",
+      "acceptance": [
+        "Require captured provenance and fresh identity/ownership checks before stopping a target.",
+        "Preview exact command/cwd and require explicit confirmation; refuse redacted or incomplete commands.",
+        "Define environment handling without persisting secret environment dumps.",
+        "Handle failed restart without silently looping or escalating privileges."
+      ],
+      "validation": [
+        "Owned child-process fixtures for PID reuse, missing cwd, redacted commands and restart failure."
+      ],
+      "out_of_scope": "No arbitrary service restart, sudo, invisible shell execution or inferred provenance.",
+      "initial_status": "deferred",
+      "issue": 42,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/42",
+      "milestone_number": 5,
+      "execution_mode": "bounded-task"
+    },
+    {
+      "key": "E01",
+      "title": "Decide optional encrypted sync architecture and threat model",
+      "milestone": "M5",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "C06",
+        "B05"
+      ],
+      "files": [
+        "docs/decisions/",
+        "docs/security/ (new)"
+      ],
+      "outcome": "Evaluate whether optional sync is worth implementing while preserving a complete local product.",
+      "acceptance": [
+        "Define devices, keys/recovery/revocation, opaque server storage and authenticated versioned protocol.",
+        "Specify conflict/deletion/retention behavior, quotas, replay protection and metadata leakage.",
+        "Compare reviewed cryptographic libraries; require specialist review before implementation.",
+        "Produce explicit client/server child issues and a go/no-go decision; declining sync is an acceptable documented outcome."
+      ],
+      "validation": [
+        "Threat-model review and synthetic multi-device scenarios; no invented cryptography."
+      ],
+      "out_of_scope": "No mandatory account, server, telemetry, cloud credentials or production deployment.",
+      "initial_status": "deferred",
+      "issue": 43,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/43",
+      "milestone_number": 6,
+      "execution_mode": "design"
+    },
+    {
+      "key": "E02",
+      "title": "Implement the approved optional sync client and self-hosted server",
+      "milestone": "M5",
+      "agent_tier": "specialist",
+      "size": "L",
+      "priority": "P2",
+      "dependencies": [
+        "E01"
+      ],
+      "files": [
+        "Future client/server modules defined by E01"
+      ],
+      "outcome": "Track the future implementation without pretending an unaccepted protocol is agent-ready.",
+      "acceptance": [
+        "Do not assign for coding until E01 is accepted and this work package is split into bounded protocol/storage/client/server tasks.",
+        "Keep local-only workflows fully functional with sync disabled or unavailable.",
+        "Enforce client-side encryption, limits and deletion semantics from the accepted threat model.",
+        "Require independent security review and integration tests before any deployment or release."
+      ],
+      "validation": [
+        "Protocol conformance, adversarial server/client fixtures and security review evidence defined by E01."
+      ],
+      "out_of_scope": "Not an implementation prompt yet; no deployment, accounts or secrets provisioning in this issue.",
+      "initial_status": "deferred",
+      "issue": 44,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/44",
+      "milestone_number": 6,
+      "execution_mode": "split-before-code"
+    },
+    {
+      "key": "F01",
+      "title": "Design sanitized share previews and a read-only session viewer",
+      "milestone": "M6",
+      "agent_tier": "specialist",
+      "size": "M",
+      "priority": "P2",
+      "dependencies": [
+        "C06",
+        "B05"
+      ],
+      "files": [
+        "docs/decisions/",
+        "docs/launch/"
+      ],
+      "outcome": "Let developers review exactly what would be shared before a portable session leaves their machine.",
+      "acceptance": [
+        "Specify review/redaction UX, path/identifier sanitization and residual disclosure risks.",
+        "Design a local read-only viewer first, including accessibility and hostile imported content boundaries.",
+        "Define optional hosting/link expiry/deletion separately; no upload without explicit user action.",
+        "Create bounded viewer and share implementation issues after the design is accepted."
+      ],
+      "validation": [
+        "Synthetic preview examples, XSS/control-sequence threat review and accessibility acceptance checklist."
+      ],
+      "out_of_scope": "No automatic public upload, cloud requirement, real-history samples or invented sanitization guarantees.",
+      "initial_status": "deferred",
+      "issue": 45,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/45",
+      "milestone_number": 7,
+      "execution_mode": "design"
+    }
+  ]
+}
