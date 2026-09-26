@@ -1,0 +1,158 @@
+use crate::model::{FileState, Snapshot};
+use anyhow::{Context, Result, bail};
+use sha2::{Digest, Sha256};
+use std::{
+    collections::BTreeMap,
+    io::Read,
+    path::Path,
+    process::{Command, Stdio},
+    thread,
+    time::{Duration, Instant},
+};
+
+// Bound subprocess latency and output. Git must never invoke user diff drivers.
+fn git(cwd: &Path, args: &[&str]) -> Result<Vec<u8>> {
+    let mut child = Command::new("git")
+        .args(args)
+        .current_dir(cwd)
+        .env("GIT_OPTIONAL_LOCKS", "0")
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()?;
+    let stdout = child.stdout.take().context("missing Git stdout")?;
+    let reader = thread::spawn(move || {
+        let mut bytes = Vec::new();
+        stdout
+            .take(4 * 1024 * 1024 + 1)
+            .read_to_end(&mut bytes)
+            .map(|_| bytes)
+    });
+    let start = Instant::now();
+    let status = loop {
+        if let Some(status) = child.try_wait()? {
+            break status;
+        }
+        if start.elapsed() > Duration::from_millis(750) {
+            let _ = child.kill();
+            let _ = child.wait();
+            let _ = reader.join();
+            bail!("Git snapshot timed out");
+        }
+        thread::sleep(Duration::from_millis(2));
+    };
+    let bytes = reader
+        .join()
+        .map_err(|_| anyhow::anyhow!("Git reader failed"))??;
+    if bytes.len() > 4 * 1024 * 1024 {
+        bail!("Git output exceeded snapshot limit");
+    }
+    if !status.success() {
+        bail!("Git query failed");
+    }
+    Ok(bytes)
+}
+fn value(cwd: &Path, args: &[&str]) -> Result<String> {
+    Ok(String::from_utf8(git(cwd, args)?)?.trim_end().to_owned())
+}
+fn fingerprint(path: &Path) -> Option<String> {
+    let metadata = std::fs::symlink_metadata(path).ok()?;
+    if metadata.file_type().is_symlink() {
+        return Some(format!("link:{}", std::fs::read_link(path).ok()?.display()));
+    }
+    if !metadata.is_file() || metadata.len() > 8 * 1024 * 1024 {
+        return None;
+    }
+    let mut file = std::fs::File::open(path).ok()?.take(8 * 1024 * 1024 + 1);
+    let mut hasher = Sha256::new();
+    let mut buffer = [0u8; 8192];
+    let mut total = 0;
+    loop {
+        let n = file.read(&mut buffer).ok()?;
+        if n == 0 {
+            break;
+        }
+        total += n;
+        if total > 8 * 1024 * 1024 {
+            return None;
+        }
+        hasher.update(&buffer[..n]);
+    }
+    Some(format!("{:x}", hasher.finalize()))
+}
+
+pub fn capture(cwd: &Path) -> Snapshot {
+    let mut snap = Snapshot {
+        cwd: cwd.to_string_lossy().into_owned(),
+        repo: None,
+        branch: None,
+        head: None,
+        files: BTreeMap::new(),
+        warning: None,
+    };
+    let root = match value(cwd, &["rev-parse", "--show-toplevel"]) {
+        Ok(root) => root,
+        Err(_) => {
+            snap.warning = Some(
+                "No Git snapshot: outside a repository, Git unavailable, or query failed.".into(),
+            );
+            return snap;
+        }
+    };
+    snap.repo = Some(root.clone());
+    snap.branch = value(cwd, &["symbolic-ref", "--quiet", "--short", "HEAD"]).ok();
+    snap.head = value(cwd, &["rev-parse", "--verify", "HEAD"]).ok();
+    match git(
+        Path::new(&root),
+        &[
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=all",
+        ],
+    ) {
+        Ok(bytes) => {
+            let mut entries = bytes.split(|b| *b == 0).filter(|b| !b.is_empty());
+            while let Some(entry) = entries.next() {
+                if entry.len() < 4 {
+                    continue;
+                }
+                let status = String::from_utf8_lossy(&entry[..2]).to_string();
+                let path = match std::str::from_utf8(&entry[3..]) {
+                    Ok(path) => path.to_owned(),
+                    Err(_) => {
+                        snap.warning =
+                            Some("Non-UTF-8 paths omitted; comparison is incomplete.".into());
+                        continue;
+                    }
+                };
+                let hash = fingerprint(&Path::new(&root).join(&path));
+                if hash.is_none() && !status.contains('D') {
+                    snap.warning = Some("Some files cannot be fingerprinted (unreadable, non-regular, or over 8 MiB). Comparison is incomplete.".into());
+                }
+                snap.files.insert(
+                    path,
+                    FileState {
+                        status: status.clone(),
+                        fingerprint: hash,
+                    },
+                );
+                if (status.contains('R') || status.contains('C'))
+                    && let Some(old) = entries.next()
+                {
+                    snap.files.insert(
+                        String::from_utf8_lossy(old).into_owned(),
+                        FileState {
+                            status: "D ".into(),
+                            fingerprint: None,
+                        },
+                    );
+                }
+            }
+        }
+        Err(error) => snap.warning = Some(error.to_string()),
+    }
+    snap
+}

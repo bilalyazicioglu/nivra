@@ -1,0 +1,30 @@
+
+$ nivra run -- grep -q working behavior.txt
+✓ Test passed
+
+$ nivra mark working
+  ◆ Marked "working" · 0 changed file(s)
+
+$ printf "broken\n" > behavior.txt
+
+$ nivra run -- grep -q working behavior.txt
+✕ Test failed (exit 1)
+
+$ nivra diff working now
+  N I V R A  /  working → now
+
+  REPOSITORY  /tmp/nivra-demo/repo
+  BRANCH      main → main
+  HEAD        dc7e4dbe → dc7e4dbe
+
+  WORKTREE CHANGES  1
+
+               M  behavior.txt
+
+  COMMANDS BETWEEN  2
+
+    ✓  sh -c 'printf "broken\n" > behavior.txt'
+    ✕  grep -q working behavior.txt
+
+  Observed changes, not proof of causation.
+
