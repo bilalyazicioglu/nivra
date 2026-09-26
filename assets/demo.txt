@@ -27,4 +27,3 @@ $ nivra diff working now
     ✕  grep -q working behavior.txt
 
   Observed changes, not proof of causation.
-
