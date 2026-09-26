@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/bilalyazicioglu/nivra/tree/main/docs/wiki
+    about: Start with the quickstart, architecture and privacy guide.
+  - name: Security policy
+    url: https://github.com/bilalyazicioglu/nivra/security/policy
+    about: Report vulnerabilities privately; never attach live history.

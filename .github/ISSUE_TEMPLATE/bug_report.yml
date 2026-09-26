@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a reproducible problem with capture or state comparison.
+title: "bug: "
+labels: [bug, "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic commands. Never attach real history, credentials or your live database. For vulnerabilities, see SECURITY.md."
+  - type: input
+    id: version
+    attributes:
+      label: Nivra version or commit
+      placeholder: "nivra --version / git rev-parse HEAD"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: OS, architecture and shell version
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Include commands in a temporary repository and expected versus actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Optional nivra doctor output. Remove private paths before posting.

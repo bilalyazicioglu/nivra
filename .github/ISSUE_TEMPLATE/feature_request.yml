@@ -1,0 +1,23 @@
+name: Feature request
+description: Describe a development-state debugging problem.
+title: "feat: "
+labels: [enhancement, "status: needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What debugging problem do you face?
+      description: Give a concrete example, including your current workaround.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired behavior and acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Consider capture overhead, privacy and scope.
