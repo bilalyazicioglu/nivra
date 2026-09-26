@@ -10,6 +10,7 @@ cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
 cargo build --locked
 sh scripts/demo.sh
+python3 scripts/test-zsh.py
 ```
 
 CI repeats these checks on macOS and Linux. zsh is required for full shell integration coverage. Tests should cover behavior, including failure modes, rather than internal implementation details.
@@ -23,3 +24,5 @@ CI repeats these checks on macOS and Linux. zsh is required for full shell integ
 - Changelog, supported platforms and known limits reflect the released binary.
 
 GitHub Wiki pages are sourced in `docs/wiki`. Review docs changes in a normal PR; publish the reviewed pages to the wiki repository afterwards. Do not silently diverge the wiki from the code revision it documents.
+
+For agent assignments read [Agent workflow](Agent-Workflow.md). Planning edits run `python3 scripts/check-plan.py`. Verify each issue's dependencies against merged commits before implementation.

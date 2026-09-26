@@ -8,7 +8,11 @@ cd nivra
 cargo build --locked
 sh scripts/demo.sh
 cargo install --path . --locked
+rehash  # zsh: refresh command lookup
+nivra --version
 ```
+
+`cargo build` alone does not install the `nivra` command. The demo uses temporary history; its marks do not carry into your project. See [Troubleshooting](Troubleshooting.md) if installation or capture is unclear.
 
 In your Git project, run a passing test through `nivra run -- <command>`, save `nivra mark working`, edit a file, run the test again and inspect `nivra diff working now`.
 
