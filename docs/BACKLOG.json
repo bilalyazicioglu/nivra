@@ -40,6 +40,45 @@
       "execution_mode": "bounded-task"
     },
     {
+      "key": "P01",
+      "title": "Publish the functional source alpha to crates.io",
+      "milestone": "M0",
+      "agent_tier": "standard",
+      "size": "M",
+      "priority": "P0",
+      "dependencies": [
+        "CORE",
+        "P00"
+      ],
+      "files": [
+        ".github/workflows/ci.yml",
+        "Cargo.toml",
+        "Cargo.lock",
+        "README.md",
+        "CHANGELOG.md",
+        "docs/PLAN.md",
+        "docs/BACKLOG.json",
+        "docs/wiki/Quickstart.md"
+      ],
+      "outcome": "Publish a functional source alpha that developers can install with cargo install nivra --locked.",
+      "acceptance": [
+        "Make the manifest publishable with accurate metadata, package contents and an explicit supported Rust version.",
+        "Package version 0.1.0 as an early source alpha so Cargo's default install selection works without a prerelease selector.",
+        "Inspect and dry-run the package, then install its generated archive into isolated Cargo and Nivra directories.",
+        "Require explicit maintainer approval immediately before publication and verify a fresh registry installation afterwards."
+      ],
+      "validation": [
+        "Run full Rust, PTY and demo checks plus cargo package --list and cargo publish --dry-run --locked.",
+        "Install the generated package in an isolated CARGO_HOME and verify version, help and demo behavior."
+      ],
+      "out_of_scope": "No placeholder crate, GitHub binaries, Homebrew formula, 1.0 claim, automatic publishing workflow or stored registry token.",
+      "initial_status": "in-progress",
+      "issue": 50,
+      "url": "https://github.com/bilalyazicioglu/nivra/issues/50",
+      "milestone_number": 1,
+      "execution_mode": "bounded-task"
+    },
+    {
       "key": "A01",
       "title": "Define snapshot, query and comparison contracts before parallel implementation",
       "milestone": "M1",

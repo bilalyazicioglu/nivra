@@ -18,11 +18,19 @@ A local development timeline that connects commands to Git state.
 
 Your shell remembers a command. Git remembers a commit. Nivra connects the moments in between: the test that passed, the edit, and the test that failed.
 
-**Early alpha, built from source.** The CLI workflow below is implemented. Interactive TUI, ports, export, sync, installers, and automatic retention are roadmap items. Previously codenamed Rewind.
+**Early source alpha.** The CLI workflow below is implemented. Interactive TUI, ports, export, sync, prebuilt installers, and automatic retention are roadmap items. Previously codenamed Rewind.
 
 ## Get started
 
-Requires a current stable Rust toolchain and Git. The initial target is macOS + zsh; CI also exercises the core CLI on Linux. No published package or release binary yet.
+Requires Rust 1.88 or newer and Git. The initial target is macOS + zsh; CI also exercises the core CLI on Linux. No prebuilt release binary yet.
+
+Install the source package from crates.io:
+
+```sh
+cargo install nivra --locked
+```
+
+Or build and exercise the demo from a checkout:
 
 ```sh
 git clone https://github.com/bilalyazicioglu/nivra.git
@@ -33,7 +41,7 @@ sh scripts/demo.sh
 
 The demo creates an isolated temporary repository and database, runs a real passing check, changes a file, runs the failing check, and compares the two moments. It cleans up after itself.
 
-To install the CLI locally:
+To install the checkout instead of the registry package:
 
 ```sh
 cargo install --path . --locked
