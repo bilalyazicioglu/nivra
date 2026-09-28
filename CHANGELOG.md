@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `nivra diff` groups output into Commands, Git and State, shows per-file and total line counts when comparing with `now`, and says explicitly when HEAD and branch are unchanged. Counts are exact since a mark only for files that were clean at the mark with HEAD unchanged; otherwise they are labelled "vs HEAD". JSON adds `lines`, `head_changed` and `branch_changed`.
+
 ## 0.1.0 — 2026-09-26
 
 - Initial Rust CLI with explicit command recording and opt-in zsh hooks.

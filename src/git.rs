@@ -87,6 +87,61 @@ fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
+/// Added/removed line counts; `None` for binary content.
+pub type LineStat = Option<(u64, u64)>;
+
+/// Line counts of the worktree against HEAD, for comparison time only.
+/// Tracked paths come from `git diff --numstat`; untracked text files count
+/// every line as added. Paths without a result (unborn HEAD, oversized or
+/// unreadable files) are absent from the map.
+pub fn numstat(root: &Path, untracked: &[&str]) -> Result<BTreeMap<String, LineStat>> {
+    let mut stats = BTreeMap::new();
+    let bytes = git(
+        root,
+        &[
+            "diff",
+            "--numstat",
+            "-z",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--no-renames",
+            "HEAD",
+        ],
+    )?;
+    for entry in bytes.split(|b| *b == 0).filter(|b| !b.is_empty()) {
+        let text = String::from_utf8_lossy(entry);
+        let mut fields = text.splitn(3, '\t');
+        let (Some(added), Some(removed), Some(path)) =
+            (fields.next(), fields.next(), fields.next())
+        else {
+            continue;
+        };
+        let counts = added.parse().ok().zip(removed.parse().ok());
+        stats.insert(path.to_owned(), counts);
+    }
+    for path in untracked {
+        let full = root.join(path);
+        let Ok(metadata) = std::fs::symlink_metadata(&full) else {
+            continue;
+        };
+        if !metadata.is_file() || metadata.len() > 8 * 1024 * 1024 {
+            continue;
+        }
+        let Ok(content) = std::fs::read(&full) else {
+            continue;
+        };
+        let counts = if content.contains(&0) {
+            None
+        } else {
+            let lines = content.iter().filter(|b| **b == b'\n').count()
+                + usize::from(content.last().is_some_and(|b| *b != b'\n'));
+            Some((lines as u64, 0))
+        };
+        stats.insert((*path).to_owned(), counts);
+    }
+    Ok(stats)
+}
+
 pub fn capture(cwd: &Path) -> Snapshot {
     let mut snap = Snapshot {
         cwd: cwd.to_string_lossy().into_owned(),

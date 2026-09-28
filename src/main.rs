@@ -186,8 +186,36 @@ fn compare(from: &str, to: &str, json: bool) -> Result<()> {
         bail!("destination mark is older than source mark");
     }
     let paths: BTreeSet<_> = before.files.keys().chain(after.files.keys()).collect();
-    let changed: Vec<_> = paths.into_iter().filter(|path| before.files.get(*path) != after.files.get(*path)).map(|path| {
-        serde_json::json!({"path": path, "before": before.files.get(path), "after": after.files.get(path)})
+    let changed: Vec<&String> = paths
+        .into_iter()
+        .filter(|path| before.files.get(*path) != after.files.get(*path))
+        .collect();
+    // Line counts need the live worktree, so they exist only when comparing with now.
+    // See docs/decisions/0002: "since mark" is exact only for files clean at the mark.
+    let head_changed = before.head != after.head;
+    let lines = if to == "now" && after.head.is_some() {
+        let untracked: Vec<&str> = changed
+            .iter()
+            .filter(|path| after.files.get(**path).is_some_and(|f| f.status == "??"))
+            .map(|path| path.as_str())
+            .collect();
+        git::numstat(std::path::Path::new(repo), &untracked).unwrap_or_default()
+    } else {
+        Default::default()
+    };
+    let basis = |path: &str| {
+        if !head_changed && !before.files.contains_key(path) {
+            "since_mark"
+        } else {
+            "vs_head"
+        }
+    };
+    let changed_json: Vec<_> = changed.iter().map(|path| {
+        let stat = lines.get(*path).map(|counts| match counts {
+            Some((added, removed)) => serde_json::json!({"added": added, "removed": removed, "basis": basis(path)}),
+            None => serde_json::json!({"binary": true, "basis": basis(path)}),
+        });
+        serde_json::json!({"path": path, "before": before.files.get(*path), "after": after.files.get(*path), "lines": stat})
     }).collect();
     // Query the interval directly: a busy history must not silently truncate comparisons.
     let mut statement = db.conn.prepare("SELECT command,exit_code FROM events WHERE started_ms>=? AND started_ms<=? AND json_extract(before_json,'$.repo')=? ORDER BY started_ms,rowid")?;
@@ -200,65 +228,105 @@ fn compare(from: &str, to: &str, json: bool) -> Result<()> {
         println!(
             "{}",
             serde_json::to_string_pretty(
-                &serde_json::json!({"from":from,"to":to,"before":before,"after":after,"changed_files":changed,"commands":events,"causality":"observations only"})
+                &serde_json::json!({"from":from,"to":to,"before":before,"after":after,"changed_files":changed_json,"commands":events,"head_changed":head_changed,"branch_changed":before.branch != after.branch,"causality":"observations only"})
             )?
         );
         return Ok(());
     }
     title(&format!("{} → {}", safe(from), safe(to)));
-    println!("  REPOSITORY  {}", safe(repo));
-    println!(
-        "  BRANCH      {} → {}",
-        safe(before.branch.as_deref().unwrap_or("(detached/unborn)")),
-        safe(after.branch.as_deref().unwrap_or("(detached/unborn)"))
-    );
-    println!(
-        "  HEAD        {} → {}",
-        before
-            .head
-            .as_deref()
-            .unwrap_or("(unborn)")
-            .chars()
-            .take(8)
-            .collect::<String>(),
-        after
-            .head
-            .as_deref()
-            .unwrap_or("(unborn)")
-            .chars()
-            .take(8)
-            .collect::<String>()
-    );
-    println!("\n  WORKTREE CHANGES  {}\n", changed.len());
-    for change in &changed {
-        let path = change["path"].as_str().unwrap_or_default();
-        let status = match (before.files.get(path), after.files.get(path)) {
-            (_, Some(file)) => file.status.trim(),
-            (Some(_), None) => "clean/absent",
-            _ => "?",
+    if to == "now" {
+        println!("  Since \"{}\"  ·  {}\n", safe(from), safe(repo));
+    } else {
+        println!(
+            "  Between \"{}\" and \"{}\"  ·  {}\n",
+            safe(from),
+            safe(to),
+            safe(repo)
+        );
+    }
+
+    println!("  Commands");
+    for (command, exit) in &events {
+        let outcome = match exit {
+            Some(0) => "✓".to_owned(),
+            Some(code) => format!("✕ exit {code}"),
+            None => "· incomplete".to_owned(),
         };
-        println!("    {status:>12}  {}", safe(path));
+        println!("    + {}  {outcome}", safe(command));
+    }
+    if events.is_empty() {
+        println!("    No recorded commands.");
+    }
+
+    println!("\n  Git");
+    let width = changed
+        .iter()
+        .map(|p| safe(p).chars().count())
+        .max()
+        .unwrap_or(0);
+    let (mut added_total, mut removed_total, mut any_vs_head) = (0, 0, false);
+    for path in &changed {
+        let status = match after.files.get(*path) {
+            Some(file) => file.status.trim().to_owned(),
+            None => "clean".to_owned(),
+        };
+        let stat = match lines.get(*path) {
+            Some(Some((added, removed))) => {
+                added_total += added;
+                removed_total += removed;
+                any_vs_head |= basis(path) == "vs_head";
+                let suffix = if basis(path) == "vs_head" {
+                    "  (vs HEAD)"
+                } else {
+                    ""
+                };
+                format!("+{added} -{removed}{suffix}")
+            }
+            Some(None) => "binary".to_owned(),
+            None => String::new(),
+        };
+        println!("    {status:>5}  {:<width$}  {stat}", safe(path));
     }
     if changed.is_empty() {
         println!("    No observed worktree changes.");
+    } else if !lines.is_empty() {
+        let scope = if any_vs_head { "  (vs HEAD)" } else { "" };
+        println!(
+            "           {} file{}, +{added_total} -{removed_total}{scope}",
+            changed.len(),
+            if changed.len() == 1 { "" } else { "s" }
+        );
     }
-    if before.head != after.head {
-        println!("\n  HEAD changed. Committed file differences are not expanded in this alpha.");
+
+    println!("\n  State");
+    let short = |head: &Option<String>| {
+        head.as_deref()
+            .map_or("(unborn)".to_owned(), |h| h.chars().take(8).collect())
+    };
+    let branch = |b: &Option<String>| safe(b.as_deref().unwrap_or("(detached/unborn)"));
+    if head_changed {
+        println!(
+            "    HEAD {} → {}  · committed changes are not expanded yet",
+            short(&before.head),
+            short(&after.head)
+        );
+    } else {
+        println!("    HEAD unchanged ({})", short(&after.head));
+    }
+    if before.branch == after.branch {
+        println!("    branch unchanged ({})", branch(&after.branch));
+    } else {
+        println!(
+            "    branch {} → {}",
+            branch(&before.branch),
+            branch(&after.branch)
+        );
     }
     for warning in [before.warning.as_ref(), after.warning.as_ref()]
         .into_iter()
         .flatten()
     {
         println!("\n  Note: {}", safe(warning));
-    }
-    println!("\n  COMMANDS BETWEEN  {}\n", events.len());
-    for (command, exit) in events {
-        let symbol = match exit {
-            Some(0) => "✓",
-            Some(_) => "✕",
-            None => "·",
-        };
-        println!("    {symbol}  {}", safe(&command));
     }
     println!("\n  Observed changes, not proof of causation.\n");
     Ok(())
