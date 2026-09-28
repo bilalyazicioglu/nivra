@@ -15,6 +15,10 @@ python3 scripts/test-zsh.py
 
 CI repeats these checks on macOS and Linux. zsh is required for full shell integration coverage. Tests should cover behavior, including failure modes, rather than internal implementation details.
 
+## Capture overhead
+
+Measure before optimizing. `cargo build --release --locked && python3 scripts/bench.py` times startup, the Git queries alone, and hook start/end in a non-Git directory, a small clean repository and a large dirty repository. It uses temporary fixtures and an isolated data directory and writes results to `docs/benchmarks/`. See the [latest baseline](https://github.com/bilalyazicioglu/nivra/blob/main/docs/benchmarks/2026-09-28-darwin.md). CI enforces no thresholds.
+
 ## Release gates
 
 - All required CI jobs pass; breaking behavior documented.
