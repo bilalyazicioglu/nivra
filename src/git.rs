@@ -79,7 +79,12 @@ fn fingerprint(path: &Path) -> Option<String> {
         }
         hasher.update(&buffer[..n]);
     }
-    Some(format!("{:x}", hasher.finalize()))
+    Some(hex(&hasher.finalize()))
+}
+
+// Lowercase hex, identical to the `{:x}` digest format stored by earlier versions.
+fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 pub fn capture(cwd: &Path) -> Snapshot {
@@ -155,4 +160,23 @@ pub fn capture(cwd: &Path) -> Snapshot {
         Err(error) => snap.warning = Some(error.to_string()),
     }
     snap
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fingerprint_is_lowercase_sha256_hex() {
+        let dir = std::env::temp_dir().join(format!("nivra-fp-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("abc.txt");
+        std::fs::write(&file, b"abc").unwrap();
+        let digest = fingerprint(&file);
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(
+            digest.as_deref(),
+            Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+        );
+    }
 }
