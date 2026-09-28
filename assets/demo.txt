@@ -13,17 +13,19 @@ $ nivra run -- grep -q working behavior.txt
 $ nivra diff working now
   N I V R A  /  working → now
 
-  REPOSITORY  /tmp/nivra-demo/repo
-  BRANCH      main → main
-  HEAD        dc7e4dbe → dc7e4dbe
+  Since "working"  ·  /tmp/nivra-demo/repo
 
-  WORKTREE CHANGES  1
+  Commands
+    + sh -c 'printf "broken\n" > behavior.txt'  ✓
+    + grep -q working behavior.txt  ✕ exit 1
 
-               M  behavior.txt
+  Git
+        M  behavior.txt  +1 -1
+           1 file, +1 -1
 
-  COMMANDS BETWEEN  2
-
-    ✓  sh -c 'printf "broken\n" > behavior.txt'
-    ✕  grep -q working behavior.txt
+  State
+    HEAD unchanged (9468c812)
+    branch unchanged (main)
 
   Observed changes, not proof of causation.
+

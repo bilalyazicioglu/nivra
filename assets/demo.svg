@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="826" viewBox="0 0 1080 826">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="849" viewBox="0 0 1080 849">
 <rect width="1080" height="100%" rx="20" fill="#0b1018"/>
 <rect x="1" y="1" width="1078" height="100%" rx="20" fill="none" stroke="#253044"/>
 <text x="40" y="48" fill="#9fe8da" font-family="monospace" font-size="15" letter-spacing="5">NIVRA</text>
@@ -19,18 +19,19 @@
 <text xml:space="preserve" x="40" y="422" fill="#9fe8da" font-family="Menlo,Consolas,monospace" font-size="15">$ nivra diff working now</text>
 <text xml:space="preserve" x="40" y="445" fill="#f2f5fa" font-family="Menlo,Consolas,monospace" font-size="15">  N I V R A  /  working → now</text>
 <text xml:space="preserve" x="40" y="468" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="491" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  REPOSITORY  /tmp/nivra-demo/repo</text>
-<text xml:space="preserve" x="40" y="514" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  BRANCH      main → main</text>
-<text xml:space="preserve" x="40" y="537" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  HEAD        dc7e4dbe → dc7e4dbe</text>
-<text xml:space="preserve" x="40" y="560" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="583" fill="#d4b0ff" font-family="Menlo,Consolas,monospace" font-size="15">  WORKTREE CHANGES  1</text>
+<text xml:space="preserve" x="40" y="491" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  Since &quot;working&quot;  ·  /tmp/nivra-demo/repo</text>
+<text xml:space="preserve" x="40" y="514" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
+<text xml:space="preserve" x="40" y="537" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  Commands</text>
+<text xml:space="preserve" x="40" y="560" fill="#a5d6b0" font-family="Menlo,Consolas,monospace" font-size="15">    + sh -c &#x27;printf &quot;broken\n&quot; &gt; behavior.txt&#x27;  ✓</text>
+<text xml:space="preserve" x="40" y="583" fill="#f69ea6" font-family="Menlo,Consolas,monospace" font-size="15">    + grep -q working behavior.txt  ✕ exit 1</text>
 <text xml:space="preserve" x="40" y="606" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="629" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">               M  behavior.txt</text>
-<text xml:space="preserve" x="40" y="652" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="675" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  COMMANDS BETWEEN  2</text>
+<text xml:space="preserve" x="40" y="629" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  Git</text>
+<text xml:space="preserve" x="40" y="652" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">        M  behavior.txt  +1 -1</text>
+<text xml:space="preserve" x="40" y="675" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">           1 file, +1 -1</text>
 <text xml:space="preserve" x="40" y="698" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="721" fill="#a5d6b0" font-family="Menlo,Consolas,monospace" font-size="15">    ✓  sh -c &#x27;printf &quot;broken\n&quot; &gt; behavior.txt&#x27;</text>
-<text xml:space="preserve" x="40" y="744" fill="#f69ea6" font-family="Menlo,Consolas,monospace" font-size="15">    ✕  grep -q working behavior.txt</text>
-<text xml:space="preserve" x="40" y="767" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
-<text xml:space="preserve" x="40" y="790" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  Observed changes, not proof of causation.</text>
+<text xml:space="preserve" x="40" y="721" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  State</text>
+<text xml:space="preserve" x="40" y="744" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">    HEAD unchanged (9468c812)</text>
+<text xml:space="preserve" x="40" y="767" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">    branch unchanged (main)</text>
+<text xml:space="preserve" x="40" y="790" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15"></text>
+<text xml:space="preserve" x="40" y="813" fill="#b4c0d2" font-family="Menlo,Consolas,monospace" font-size="15">  Observed changes, not proof of causation.</text>
 </svg>

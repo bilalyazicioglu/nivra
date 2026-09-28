@@ -108,6 +108,7 @@ Nivra reports **observed changes**, never proof that a particular command caused
 - Hooks are synchronous. Each Git subprocess has a 750 ms deadline; this is not a total hook latency guarantee. Large repositories need benchmarking before everyday adoption.
 - File fingerprints cover regular changed files up to 8 MiB. Unsupported paths/files produce incomplete-snapshot notices. Ignored files and submodule contents are excluded.
 - A changed HEAD is displayed, but committed file differences are not expanded yet. No historical source recovery or line-by-line diff is promised.
+- Line counts in `nivra diff … now` come from the current worktree against HEAD. They equal the change since the mark only for files that were clean at the mark with HEAD unchanged; otherwise the output says "vs HEAD".
 - Interrupted commands can remain incomplete. Automatic retention, session browsing, shell-installation detection and full diff stats are not implemented.
 
 ## Contributing

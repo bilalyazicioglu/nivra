@@ -6,7 +6,7 @@ import re
 
 source = Path('assets/demo.txt')
 text = source.read_text()
-text = re.sub(r'(?m)^(  REPOSITORY  ).+$', r'\1/tmp/nivra-demo/repo', text)
+text = re.sub(r'(?m)^(  Since "[^"]*"  ·  ).+$', r'\1/tmp/nivra-demo/repo', text)
 source.write_text(text)
 lines = text.strip('\n').splitlines()
 height = 182 + len(lines) * 23

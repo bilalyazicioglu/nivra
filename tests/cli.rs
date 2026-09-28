@@ -279,3 +279,96 @@ fn locked_database_fails_open() {
     assert_eq!(out.status.code(), Some(9));
     assert_eq!(out.stdout, b"survives\n");
 }
+#[test]
+fn diff_since_clean_mark_reports_commands_line_stats_and_state() {
+    let repo = repo();
+    let data = TempDir::new().unwrap();
+    assert!(
+        nivra(repo.path(), data.path(), &["mark", "working"])
+            .status
+            .success()
+    );
+    fs::write(repo.path().join("app.txt"), "a\nb\nc\n").unwrap();
+    fs::write(repo.path().join("notes.txt"), "one\ntwo\nthree\n").unwrap();
+    assert!(
+        nivra(
+            repo.path(),
+            data.path(),
+            &["run", "--", "sh", "-c", "exit 0"]
+        )
+        .status
+        .success()
+    );
+    assert_eq!(
+        nivra(
+            repo.path(),
+            data.path(),
+            &["run", "--", "sh", "-c", "exit 1"]
+        )
+        .status
+        .code(),
+        Some(1)
+    );
+
+    let text = nivra(repo.path(), data.path(), &["diff", "working", "now"]);
+    assert!(text.status.success());
+    let text = String::from_utf8_lossy(&text.stdout);
+    for expected in [
+        "Since \"working\"",
+        "+ sh -c 'exit 0'",
+        "+ sh -c 'exit 1'",
+        "exit 1",
+        "app.txt",
+        "+3 -1",
+        "notes.txt",
+        "+3 -0",
+        "2 files, +6 -1",
+        "HEAD unchanged",
+        "branch unchanged (main)",
+        "not proof of causation",
+    ] {
+        assert!(text.contains(expected), "missing {expected:?} in:\n{text}");
+    }
+    assert!(!text.contains("vs HEAD"), "{text}");
+
+    let json = nivra(
+        repo.path(),
+        data.path(),
+        &["diff", "working", "now", "--json"],
+    );
+    let json: serde_json::Value = serde_json::from_slice(&json.stdout).unwrap();
+    assert_eq!(json["head_changed"], false);
+    assert_eq!(json["branch_changed"], false);
+    let app = json["changed_files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|file| file["path"] == "app.txt")
+        .unwrap();
+    assert_eq!(app["lines"]["added"], 3);
+    assert_eq!(app["lines"]["removed"], 1);
+    assert_eq!(app["lines"]["basis"], "since_mark");
+}
+#[test]
+fn diff_labels_line_stats_vs_head_when_file_was_dirty_at_mark() {
+    let repo = repo();
+    let data = TempDir::new().unwrap();
+    fs::write(repo.path().join("app.txt"), "first edit\n").unwrap();
+    assert!(
+        nivra(repo.path(), data.path(), &["mark", "working"])
+            .status
+            .success()
+    );
+    fs::write(repo.path().join("app.txt"), "second edit\n").unwrap();
+    let text = nivra(repo.path(), data.path(), &["diff", "working", "now"]);
+    let text = String::from_utf8_lossy(&text.stdout);
+    assert!(text.contains("+1 -1"), "{text}");
+    assert!(text.contains("vs HEAD"), "{text}");
+    let json = nivra(
+        repo.path(),
+        data.path(),
+        &["diff", "working", "now", "--json"],
+    );
+    let json: serde_json::Value = serde_json::from_slice(&json.stdout).unwrap();
+    assert_eq!(json["changed_files"][0]["lines"]["basis"], "vs_head");
+}
