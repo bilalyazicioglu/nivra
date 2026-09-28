@@ -1,5 +1,6 @@
 mod git;
 mod model;
+mod ports;
 mod privacy;
 mod shell;
 mod store;
@@ -64,6 +65,11 @@ enum Commands {
     Status,
     /// Check storage integrity and local prerequisites
     Doctor,
+    /// List listening TCP ports with their process and working directory (read-only)
+    Ports {
+        #[arg(long)]
+        json: bool,
+    },
     #[command(hide = true)]
     Hook {
         #[command(subcommand)]
@@ -387,6 +393,68 @@ fn execute(cli: Cli) -> Result<i32> {
             if !git {
                 return Ok(1);
             }
+        }
+        Commands::Ports { json } => {
+            let listeners = ports::listening()?;
+            if json {
+                println!("{}", serde_json::to_string_pretty(&listeners)?);
+                return Ok(0);
+            }
+            title("ports");
+            let home = std::env::var("HOME").ok().filter(|h| !h.is_empty());
+            // IPv4 and IPv6 sockets on the same address read identically; JSON keeps both.
+            let mut rows: Vec<[String; 5]> = listeners
+                .iter()
+                .map(|l| {
+                    let cwd = match (&l.cwd, &home) {
+                        (Some(cwd), Some(home))
+                            if cwd == home || cwd.starts_with(&format!("{home}/")) =>
+                        {
+                            format!("~{}", &cwd[home.len()..])
+                        }
+                        (Some(cwd), _) => cwd.clone(),
+                        (None, _) => "—".to_owned(),
+                    };
+                    [
+                        l.port.to_string(),
+                        safe(&l.address),
+                        l.pid.to_string(),
+                        safe(l.process.as_deref().unwrap_or("—")),
+                        safe(&cwd),
+                    ]
+                })
+                .collect();
+            rows.dedup();
+            let header = ["PORT", "ADDRESS", "PID", "PROCESS", "CWD"];
+            let widths: Vec<usize> = (0..4)
+                .map(|i| {
+                    rows.iter()
+                        .map(|r| r[i].chars().count())
+                        .chain([header[i].len()])
+                        .max()
+                        .unwrap_or(0)
+                })
+                .collect();
+            for row in std::iter::once(header.map(str::to_owned)).chain(rows) {
+                println!(
+                    "  {:<w0$}  {:<w1$}  {:<w2$}  {:<w3$}  {}",
+                    row[0],
+                    row[1],
+                    row[2],
+                    row[3],
+                    row[4],
+                    w0 = widths[0],
+                    w1 = widths[1],
+                    w2 = widths[2],
+                    w3 = widths[3]
+                );
+            }
+            if listeners.is_empty() {
+                println!("  No listening TCP ports visible to this user.");
+            }
+            println!(
+                "\n  Read-only: nothing is signalled. Processes of other users may be hidden.\n"
+            );
         }
         Commands::Hook { action } => match action {
             Hook::Start { session } => {

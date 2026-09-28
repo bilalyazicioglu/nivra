@@ -279,3 +279,27 @@ fn locked_database_fails_open() {
     assert_eq!(out.status.code(), Some(9));
     assert_eq!(out.stdout, b"survives\n");
 }
+#[cfg(target_os = "macos")]
+#[test]
+fn ports_lists_a_loopback_listener_without_signalling_it() {
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let data = TempDir::new().unwrap();
+    let out = nivra(Path::new("."), data.path(), &["ports", "--json"]);
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let ports: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let entry = ports
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["port"] == port)
+        .unwrap_or_else(|| panic!("port {port} missing from {ports}"));
+    assert_eq!(entry["pid"], std::process::id());
+    assert_eq!(entry["address"], "127.0.0.1");
+    // Inspection is read-only: the listener still accepts connections.
+    std::net::TcpStream::connect(("127.0.0.1", port)).unwrap();
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `nivra ports [--json]` lists listening TCP ports with address, PID, process and working directory on macOS. Read-only; unavailable fields show as `—`.
+
 ## 0.1.0 — 2026-09-26
 
 - Initial Rust CLI with explicit command recording and opt-in zsh hooks.
